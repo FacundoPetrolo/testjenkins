@@ -1,0 +1,37 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<bean id="mlsDataSource" class="org.apache.tomcat.jdbc.pool.DataSource"	destroy-method="close">
+		<property name="username" value="${mls.jdbc.username}" />
+		<property name="password" value="${mls.jdbc.password}" />
+		<property name="driverClassName" value="${mssql.jdbc.driver}" />
+		<property name="url" value="#{'jdbc:sqlserver://' + '${mls.jdbc.server}' + ';databaseName=' + '${mls.jdbc.database}' }" />
+		<property name="initialSize" value="${mls.jdbc.initialSize}" />
+		<property name="maxActive" value="${mls.jdbc.maxActive}" />
+	</bean>
+
+	<bean id="mlsSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="mlsDataSource" />
+		<property name="packagesToScan">
+			<list>
+				<value>ar.com.telefonica.mls.model</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${mssql.hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<prop key="connection.pool_size">${mls.jdbc.maxActive}</prop>
+				<prop key="hbm2ddl.auto">validate</prop>
+			</props>
+		</property>
+	</bean>
+
+	<tx:annotation-driven transaction-manager="mlsTransactionManager" />
+	<bean id="mlsTransactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="mlsSessionFactory" />
+	</bean>
+
+</beans>
